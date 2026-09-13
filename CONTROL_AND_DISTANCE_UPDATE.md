@@ -1,0 +1,13 @@
+# Control, distant markings, and real-data showcases
+
+Cancellation now writes a shared request that any updated worker can consume. The original worker receives a compatibility request automatically. A completed job returns its actual status; the interface no longer rejects a cancellation because it came through another worker. Resume accepts work into the local worker queue.
+
+Track candidates use a 960 × 540 image rather than 640 × 360, begin at 25% of image height rather than about 35%, and accept shorter distant paint segments. A residual filter reduces unrelated line contributions; quadratic fits allow modest curvature. Foreground car and tire masks clip fitted paths. These remain visual candidates, not certified legal boundaries. Distant invisible geometry is not presented as observed.
+
+Car segmentation uses 960-pixel inference and retries at 640 pixels when no vehicle is found; this matters for onboard silhouettes. A further 1280-pixel attempt handles remaining empty detections. The batch size is four for GPU memory headroom. The held-out 77-frame integration check found 77 contours with contiguous timestamps and frame indices. The 24-frame diagnostic found 24 contours compared with the previously recorded 22. These counts establish coverage only, not precision or complete shape accuracy. Multiscale retries cost processing time.
+
+Some onboard foreground masks are classified as motorcycles by the generic model. Large lower-frame masks in that class are retained as explicitly unverified foreground vehicle candidates; overlapping such masks are combined. This recovered a missing Singapore cockpit silhouette in the inspected frame, but does not validate its identity or imply a newly trained F1 model. A larger generic segmentation model was downloaded for a diagnostic comparison and is not used in production.
+
+Two official 2024 Norris qualifying videos were downloaded as silent 720p video streams: Singapore and Spain. Files, source URLs, hashes and acquisition outcomes are in data/showcase/catalog.json. They are held out of training. Matching OpenF1 session/driver bundles include 338/277 location samples and 343/271 car telemetry samples respectively, plus session weather and race control records. Showcase buttons select local footage and recorded data together; the telemetry sample slider is independent of video playback. Video timing alignment is not claimed. The API does not supply video footage or legal boundary geometry.
+
+Validation: 21 Python tests pass, covering shared cancellation and distant paint retention in addition to existing single-frame evidence checks. Production build passes. No zero-error or general boundary accuracy claim is supported without reviewed annotations.

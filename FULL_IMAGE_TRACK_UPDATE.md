@@ -1,0 +1,7 @@
+# Full-image track cues and oversized-mask rejection
+
+The viewer now uses full-image white-paint and adjacent red/white curb contours, supported by a connected road-like surface. There is no fixed near-car crop for these candidates. Horizontal and curved sections can contribute. Curb evidence is explicitly separate from legal track geometry. Existing event decisions remain unchanged.
+
+Vehicle masks covering 65% or more of the frame and nearly full-screen detection boxes are rejected. Broad motorcycle/airplane foreground predictions remain explicitly unverified candidates, subject to tighter height limits. Truck/bus classifications are no longer accepted as F1 detections. Empty or rejected results trigger alternate input scales and an installed larger segmentation model. Its checkpoint hash is included in new job manifests.
+
+Validation: 24 unit tests, including whole-frame mask rejection, distant horizontal white paint and red/white curb separation. Inspected six real frames from two downloaded sessions. Visual inspection still finds inaccurate contours, missed vehicles and occasional false paint candidates; this is not validated boundary segmentation or a claim of universal improvement. A dedicated F1 mask/track annotation set and held-out precision/recall evaluation remain necessary. Previous exported analyses retain their original results; new analyses use this implementation.
