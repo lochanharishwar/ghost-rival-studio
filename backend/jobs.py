@@ -52,6 +52,7 @@ def run(job,asset):
         job.update(status='running',processed=0,error=None,model=str(weights) if weights.exists() else 'classical CV only',started_at=time.time());put('job',job)
         writer=cv2.VideoWriter(str(folder/'annotated.mp4'),cv2.VideoWriter_fourcc(*'mp4v'),fps/stride,(asset['width'],asset['height']))
         events=[];idx=0;written=0;pending=[]
+        (folder/'events.json').write_text('[]')
         batch_size=4 if model.compute['gpu_available'] and model.model and stride==1 else 1
         from .frame_index import invalidate
         invalidate(folder/'frames.jsonl')
@@ -73,7 +74,12 @@ def run(job,asset):
                     r['timestamp_source']='decoder PTS' if timestamp>0 or idx==0 else 'estimated frame/fps'
                     out.write(json.dumps(r)+'\n');written+=1
                     out.flush()
-                    if r['flagged']:events.append(dict(frame=idx,time=r['time'],type='track limits',confidence=r['confidence'],evidence=r['evidence']))
+                    if r['flagged']:
+                        events.append(dict(frame=idx,time=r['time'],type='track limits',confidence=r['confidence'],evidence=r['evidence']))
+                        # Publish alerts during processing, not only at job completion.
+                        event_temp=folder/'events.pending.json'
+                        event_temp.write_text(json.dumps(events))
+                        event_temp.replace(folder/'events.json')
                     writer.write(annotate(frame.copy(),r))
                     if written==1:cv2.imwrite(str(folder/'first-frame.jpg'),annotate(frame.copy(),r))
                 idx+=1

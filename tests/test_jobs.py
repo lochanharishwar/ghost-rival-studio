@@ -26,7 +26,14 @@ class JobTests(unittest.TestCase):
     jobs.run(job,asset)
    self.assertEqual(job['status'],'cancelled');self.assertEqual(job['processed'],4)
    jobs.CANCEL['test'].clear()
-   with patch.object(jobs,'DATA',root),patch.object(jobs,'put',lambda kind,value:value):jobs.run(job,asset)
+   class Observing(Perception):
+    def frame(self,frame,idx,fps,calibration):
+     if idx==6:
+      published=json.loads((root/'analyses/test/events.json').read_text())
+      self_test.assertEqual([e['frame'] for e in published],[5])
+     return super().frame(frame,idx,fps,calibration)
+   self_test=self
+   with patch.object(jobs,'DATA',root),patch.object(jobs,'put',lambda kind,value:value),patch.object(jobs,'Perception',Observing):jobs.run(job,asset)
    self.assertEqual(job['status'],'complete')
    rows=[json.loads(x) for x in (root/'analyses/test/frames.jsonl').read_text().splitlines()]
    self.assertEqual([r['frame'] for r in rows],list(range(10)))

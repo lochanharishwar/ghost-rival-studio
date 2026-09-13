@@ -166,11 +166,18 @@ def annotate(frame,result):
             cv2.polylines(frame,[contour],True,(115,235,70),max(2,w//400),cv2.LINE_AA)
         cv2.putText(frame,f"CAR {c['id']} {c['score']:.2f}",(x1,max(18,y1-5)),0,.45,(115,235,70),1)
     for line in result.get('track_lines',[]):
-        points=(np.asarray(line['points'])*[w,h]).astype(np.int32)
-        if len(points)>1:
-            if line['kind'].startswith('inferred'):
-                for i in range(0,len(points)-1,3):cv2.line(frame,tuple(points[i]),tuple(points[min(i+1,len(points)-1)]),(255,255,255),max(3,w//220),cv2.LINE_AA)
-            else:cv2.polylines(frame,[points],False,(255,255,255),max(3,w//220),cv2.LINE_AA)
+        pts = np.asarray(line.get('points', []))
+        if pts.ndim != 2 or pts.shape[1] != 2 or len(pts) < 2:
+            continue
+        points = (pts * [w, h]).astype(np.int32)
+        if len(points) > 1:
+            if str(line.get('kind', '')).startswith('inferred'):
+                for i in range(0, len(points) - 1, 3):
+                    p1 = (int(points[i, 0]), int(points[i, 1]))
+                    p2 = (int(points[min(i + 1, len(points) - 1), 0]), int(points[min(i + 1, len(points) - 1), 1]))
+                    cv2.line(frame, p1, p2, (255, 255, 255), max(3, w // 220), cv2.LINE_AA)
+            else:
+                cv2.polylines(frame, [points], False, (255, 255, 255), max(3, w // 220), cv2.LINE_AA)
     cv2.rectangle(frame,(0,h-38),(w,h),(22,25,30),-1)
     cv2.putText(frame,f"{result['frame']} | {result['track_limit']} | UNCALIBRATED",(10,h-15),0,.4,(255,225,170),1)
     return frame
